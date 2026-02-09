@@ -1,0 +1,30 @@
+# --- Global Settings ---
+# Handle line endings automatically for text files
+* text=auto
+
+# --- Java & Maven ---
+*.java text eol=lf
+/mvnw text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.jar binary
+
+# --- Frontend (Angular / Web) ---
+*.ts text eol=lf
+*.js text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.json text eol=lf
+
+# --- Documentation & Config ---
+*.md text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# --- Graphics / Binaries ---
+*.jpg binary
+*.png binary
+*.gif binary
+*.ico binary
+*.pdf binary
