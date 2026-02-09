@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: "25"
-          distribution: "temurin" # High-performance OpenJDK
+          distribution: "zulu" # High-performance OpenJDK
           cache: "maven"
 
       - name: Build & Run Tests
