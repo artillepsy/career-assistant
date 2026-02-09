@@ -7,6 +7,11 @@
     <groupId>com.artillepsy</groupId>
     <artifactId>career-assistant</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>backend/career-assistant-api</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>25</maven.compiler.source>
