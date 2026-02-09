@@ -1,0 +1,54 @@
+# --- Java & Maven Wrapper ---
+# We ignore the target folder but keep the Maven wrapper so others can build the project
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!maven-wrapper.jar
+
+# --- Spring Boot & Logs ---
+*.jar
+*.war
+*.ear
+*.lst
+*.log
+.temp/
+/help.md
+
+# --- Angular / Frontend ---
+# Essential to ignore dependencies and local caches
+node_modules/
+.npm/
+.angular/
+dist/
+/frontend/proxy.conf.json
+npm-debug.log*
+yarn-debug.log*
+
+# --- IntelliJ IDEA ---
+# Ignore the whole folder except for shared run configurations if needed
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# --- Eclipse ---
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# --- VS Code ---
+.vscode/
+
+# --- Operating System ---
+.DS_Store
+Thumbs.db
+
+# --- Inclusion Rules for Nested Builds ---
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
