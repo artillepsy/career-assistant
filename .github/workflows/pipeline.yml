@@ -52,8 +52,8 @@ jobs:
           aws-region: eu-central-1
 
       - name: Setup Terraform
-        # pinned to v3.0.0
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d6169474f0e8c3f
+        # pinned to v3.1.2
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd
         with:
           terraform_version: "1.10.0"
 
