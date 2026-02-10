@@ -17,7 +17,8 @@ modify, and destroy resources according to the configuration files.
 
 ## Services
 
-### [**AWS ECR Module (Elastic Container Registry)**](./modules/ecr/README.md)
+### 1. AWS ECR Module (Elastic Container Registry) | [README](./modules/ecr/README.md)
+
 
 Amazon ECR is a fully managed Docker container registry that makes it easy to store, manage, and deploy Docker container
 images.
@@ -28,7 +29,8 @@ images.
 - Provides secure, scalable container image storage
 - Integrates seamlessly with AWS Lambda for container-based deployments
 
-### [**AWS Lambda**](./modules/lambda/README.md)
+### 2. AWS Lambda | [README](./modules/lambda/README.md)
+
 
 AWS Lambda is a serverless compute service that runs code in response to events without requiring server management.
 
@@ -39,12 +41,53 @@ AWS Lambda is a serverless compute service that runs code in response to events 
 - Reduces operational overhead and costs
 - Pulls container images from ECR for deployment
 
+## Bootstrap | [README](./bootstrap/README.md)
+
+Before deploying the main infrastructure, you must set up the OIDC (OpenID Connect) trust relationship between GitHub
+Actions and AWS. This allows GitHub Actions to authenticate with AWS without storing long-lived credentials.
+
+⚠️ **Note**: This bootstrap step only needs to be run once per AWS account and repository.
+
+**Steps:**
+
+1. Navigate to the bootstrap directory:
+   ```bash
+   cd terraform/bootstrap
+   ```
+
+2. Initialize Terraform:
+   ```bash
+   terraform init
+   ```
+
+3. Apply the bootstrap configuration with your GitHub details:
+   ```bash
+   terraform apply \
+     -var="github_username=YOUR_GITHUB_USERNAME" \
+     -var="github_repo_name=YOUR_REPO_NAME"
+   ```
+
+4. After successful deployment, note the IAM Role ARN from the output.
+
+5. Add the Role ARN to your GitHub repository secrets as `AWS_ROLE_ARN`:
+    - Go to your repository → Settings → Secrets and variables → Actions
+    - Create a new secret named `AWS_ROLE_ARN`
+    - Paste the Role ARN value
+
+**What this creates:**
+
+- **OIDC Provider**: Establishes trust between GitHub Actions and AWS
+- **IAM Role**: `career-assistant-deployer` role that GitHub Actions assumes
+- **Permissions**: AdministratorAccess policy for deploying infrastructure
+
 ## Deployment Workflow
 
 1. **Build**: Docker images are built for Lambda functions via GitHub Actions
 2. **Push**: Images are pushed to ECR repositories
 3. **Deploy**: Terraform provisions Lambda functions using images from ECR
 4. **Update**: Infrastructure changes are applied through Terraform workflows
+
+
 
 ## TODO:
 
