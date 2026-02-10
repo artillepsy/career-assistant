@@ -18,7 +18,7 @@ resource "aws_ecr_repository" "this" {
 resource "aws_ecr_lifecycle_policy" "cleanup" {
   repository = aws_ecr_repository.this.name
 
-  policy = jsondecode({
+  policy = jsonencode({
     rules = [{
       rulePriority = 1
       description  = "Keep only the last 10 images"
