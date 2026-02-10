@@ -9,7 +9,7 @@ module "ecr" {
 }
 
 # Call the Lambda module
-module "lambda" {
+module "api_lambda" {
   source = "./modules/lambda"
   function_name = "${var.project_name}-api"
 

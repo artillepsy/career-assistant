@@ -48,6 +48,6 @@ AWS Lambda is a serverless compute service that runs code in response to events 
 
 ## TODO:
 
-- Add API Gateway for Lambda functions
+- Add API Gateway for Lambda functions. Now it's only accessible via simple Lambda URL
 - Add CloudWatch Logs for Lambda functions
 - Add RDS for database
