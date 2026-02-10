@@ -11,7 +11,7 @@ resource "aws_lambda_function" "this" {
   # SnapStart configuration
   publish = true # Tells AWS to create a new Version on every change
   snap_start {
-    apply_on = "PublishedVersion"
+    apply_on = "PublishedVersions"
   }
 }
 
