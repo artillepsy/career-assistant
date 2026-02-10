@@ -19,7 +19,6 @@ modify, and destroy resources according to the configuration files.
 
 ### 1. AWS ECR Module (Elastic Container Registry) | [README](./modules/ecr/README.md)
 
-
 Amazon ECR is a fully managed Docker container registry that makes it easy to store, manage, and deploy Docker container
 images.
 
@@ -29,8 +28,7 @@ images.
 - Provides secure, scalable container image storage
 - Integrates seamlessly with AWS Lambda for container-based deployments
 
-### 2. AWS Lambda | [README](./modules/lambda/README.md)
-
+### 2. AWS Lambda for API | [README](./modules/lambda/README.md)
 
 AWS Lambda is a serverless compute service that runs code in response to events without requiring server management.
 
@@ -62,9 +60,7 @@ Actions and AWS. This allows GitHub Actions to authenticate with AWS without sto
 
 3. Apply the bootstrap configuration with your GitHub details:
    ```bash
-   terraform apply \
-     -var="github_username=YOUR_GITHUB_USERNAME" \
-     -var="github_repo_name=YOUR_REPO_NAME"
+   terraform apply -var="github_username=YOUR_GITHUB_USERNAME" -var="github_repo_name=YOUR_REPO_NAME"
    ```
 
 4. After successful deployment, note the IAM Role ARN from the output.
