@@ -90,3 +90,4 @@ Actions and AWS. This allows GitHub Actions to authenticate with AWS without sto
 - Add API Gateway for Lambda functions. Now it's only accessible via simple Lambda URL
 - Add CloudWatch Logs for Lambda functions
 - Add RDS for database
+- Push actual Docker Images built by GitHub Actions to ECR
