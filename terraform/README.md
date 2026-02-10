@@ -63,18 +63,11 @@ Actions and AWS. This allows GitHub Actions to authenticate with AWS without sto
 
 3. Apply the bootstrap configuration with your GitHub details. You can manually enter your GitHub username and repo name,
    or you can run the following command to automatically extract them from your git remote. 
-   <br></br>
-   Manual setup:
-   ```bash
-   terraform apply `
-   -var="github_username=YOUR_USERNAME" `
-   -var="github_repo_name=YOUR_REPOSITORY_NAME"
-   ```
    
-   Automatic setup:
    ```bash
-   $REPO_NAME = (basename -s .git (git config --get remote.origin.url)); `
-   $USER_NAME = (git config --get remote.origin.url).Split('/')[-2]; `
+   $URL = (git config --get remote.origin.url); `
+   $REPO_NAME = $URL.Split('/')[-1].Replace('.git',''); `
+   $USER_NAME = $URL.Split('/')[-2]; `
    
    terraform apply -var="github_username=$REPO_NAME" -var="github_repo_name=$USER_NAME"
    ```
