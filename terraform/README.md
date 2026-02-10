@@ -91,3 +91,4 @@ Actions and AWS. This allows GitHub Actions to authenticate with AWS without sto
 - Add CloudWatch Logs for Lambda functions
 - Add RDS for database
 - Push actual Docker Images built by GitHub Actions to ECR
+- Add SnapStart for Lambda functions in the future (it doesn't support docker images yet) to reduce cold start time

@@ -7,12 +7,6 @@ resource "aws_lambda_function" "this" {
   architectures = ["arm64"] # Java 25 on Graviton is 34% better price-performance
   memory_size = var.memory_size
   timeout = 30
-
-  # SnapStart configuration
-  publish = true # Tells AWS to create a new Version on every change
-  snap_start {
-    apply_on = "PublishedVersions"
-  }
 }
 
 # An Alias acts as a "pointer" to the SnapStart-enabled version
