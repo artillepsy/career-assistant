@@ -52,3 +52,22 @@ Thumbs.db
 !**/src/test/**/target/
 !**/src/main/**/build/
 !**/src/test/**/build/
+
+# Local .terraform directories (provider binaries)
+**/.terraform/*
+
+# .tfstate files (infrastructure state)
+*.tfstate
+*.tfstate.*
+
+# Variable files (sensitive inputs)
+*.tfvars
+*.tfvars.json
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Terraform CLI configuration files
+.terraformrc
+terraform.rc
