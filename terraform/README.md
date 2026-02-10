@@ -69,7 +69,7 @@ Actions and AWS. This allows GitHub Actions to authenticate with AWS without sto
    $REPO_NAME = $URL.Split('/')[-1].Replace('.git',''); `
    $USER_NAME = $URL.Split('/')[-2]; `
    
-   terraform apply -var="github_username=$REPO_NAME" -var="github_repo_name=$USER_NAME"
+   terraform apply -var="github_username=$USER_NAME" -var="github_repo_name=$REPO_NAME"
    ```
 
 4. After successful deployment, note the IAM Role ARN from the output.
