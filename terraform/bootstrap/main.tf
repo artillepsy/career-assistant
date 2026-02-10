@@ -1,3 +1,5 @@
+# --------------- GitHub Actions IAM Role Configuration ---------------
+
 # Fetch GitHub's security certificate dynamically
 data "tls_certificate" "github" {
   url = "https://token.actions.githubusercontent.com/.well-known/openid-configuration"
@@ -38,4 +40,53 @@ resource "aws_iam_role" "github_actions" {
 resource "aws_iam_role_policy_attachment" "admin" {
   role       = aws_iam_role.github_actions.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+
+
+# --------------- State Bucket Configuration  ---------------
+
+# The State Bucket
+resource "aws_s3_bucket" "terraform_state" {
+  bucket        = "${var.github_repo_name}-tfstate-${var.github_username}" # Must be unique globally
+  force_destroy = true
+}
+
+# Enable Versioning (Required for native locking and safety)
+resource "aws_s3_bucket_versioning" "state_versioning" {
+  bucket = aws_s3_bucket.terraform_state.id
+  versioning_configuration { status = "Enabled" }
+}
+
+# S3 Public Access Block (Security Best Practice)
+resource "aws_s3_bucket_public_access_block" "state_lock" {
+  bucket = aws_s3_bucket.terraform_state.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# Add S3 permissions to the existing GitHub IAM Role
+resource "aws_iam_role_policy" "state_access" {
+  name = "terraform-state-access"
+  role = aws_iam_role.github_actions.id # Links to the existing role
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = ["s3:ListBucket"]
+        Effect   = "Allow"
+        Resource = [aws_s3_bucket.terraform_state.arn]
+      },
+      {
+        # .tflock is required for Terraform 1.10+ native locking
+        Action   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+        Effect   = "Allow"
+        Resource = ["${aws_s3_bucket.terraform_state.arn}/*"]
+      }
+    ]
+  })
 }

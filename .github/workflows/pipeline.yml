@@ -40,6 +40,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      TF_LOG: DEBUG
+      TF_VAR_project_name: ${{ github.event.repository.name }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -58,12 +61,11 @@ jobs:
           terraform_version: "1.10.0"
 
       - name: Terraform Init
-        run: terraform init -input=false
+        run: |
+          BUCKET_NAME="${{ github.event.repository.name }}-tfstate-${{ github.repository_owner }}"
+          terraform init -input=false -backend-config="bucket=${BUCKET_NAME}"
         working-directory: ./terraform
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -input=false
         working-directory: ./terraform
-        env:
-          TF_LOG: DEBUG
-          TF_VAR_project_name: "career-assistant"

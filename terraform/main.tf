@@ -1,5 +1,16 @@
 terraform {
   required_version = ">= 1.0.0" # Ensure that the Terraform version is 1.0.0 or higher
+
+  backend "s3" {
+    # catch bucket name from CI/CD
+    key          = "terraform.tfstate"
+    region       = "eu-central-1"
+    encrypt      = true
+
+    # Enable S3 Native Locking (Available in Terraform 1.10+)
+    # This removes the need for a DynamoDB table!
+    use_lockfile = true
+  }
 }
 
 # Call the ECR module

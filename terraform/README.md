@@ -76,6 +76,27 @@ Actions and AWS. This allows GitHub Actions to authenticate with AWS without sto
 - **IAM Role**: `career-assistant-deployer` role that GitHub Actions assumes
 - **Permissions**: AdministratorAccess policy for deploying infrastructure
 
+## Cleaning Up
+
+⚠️ **Warning**: These operations are destructive and will permanently delete resources. Always ensure you have backups
+of any important data before proceeding.
+
+To remove all resources from AWS, run the following commands:
+
+1. Navigate to the main terraform directory and destroy the infrastructure:
+   ```bash
+   cd terraform
+   terraform destroy -auto-approve
+   ```
+
+2. Then navigate to the bootstrap directory and destroy the bootstrap resources:
+   ```bash
+   cd terraform/bootstrap
+   terraform destroy -auto-approve -var="github_username=YOUR_GITHUB_USERNAME" -var="github_repo_name=YOUR_REPO_NAME"
+   ```
+
+This will permanently delete all AWS resources created by this project.
+
 ## Deployment Workflow
 
 1. **Build**: Docker images are built for Lambda functions via GitHub Actions
@@ -93,3 +114,4 @@ Actions and AWS. This allows GitHub Actions to authenticate with AWS without sto
 - Push actual Docker Images built by GitHub Actions to ECR
 - Add SnapStart for Lambda functions in the future (it doesn't support docker images yet) to reduce cold start time.
   (Alternative) Increase Lambda memory size instead.
+- Add S3 bucket for state
