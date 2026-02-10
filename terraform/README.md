@@ -58,9 +58,19 @@ Actions and AWS. This allows GitHub Actions to authenticate with AWS without sto
    terraform init
    ```
 
-3. Apply the bootstrap configuration with your GitHub details:
+3. Apply the bootstrap configuration with your GitHub details. You can manually enter your GitHub username and repo name,
+   or you can run the following command to automatically extract them from your git remote. Manual setup:
    ```bash
-   terraform apply -var="github_username=YOUR_GITHUB_USERNAME" -var="github_repo_name=YOUR_REPO_NAME"
+   terraform apply `
+   -var="github_username=YOUR_USERNAME" `
+   -var="github_repo_name=YOUR_REPOSITORY_NAME"
+   ```
+   
+   Automatic setup:
+   ```bash
+   terraform apply `
+   -var="github_username=$((git config --get remote.origin.url).Split('/')[-2])" `
+   -var="github_repo_name=$(((git config --get remote.origin.url).Split('/')[-1]).Replace('.git',''))"
    ```
 
 4. After successful deployment, note the IAM Role ARN from the output.
