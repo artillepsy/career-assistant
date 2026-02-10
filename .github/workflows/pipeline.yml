@@ -45,13 +45,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        # pinned to v4.0.2
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d44e03b03f1
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: eu-central-1
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        # pinned to v3.0.0
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d6169474f0e8c3f
         with:
           terraform_version: "1.10.0"
 
