@@ -10,10 +10,12 @@ and management of AWS resources. By using Terraform, we maintain:
 - **Automation**: Reduced manual configuration and human error
 - **Documentation**: Infrastructure is self-documented through code
 
+
 ## Provider
 
 This project uses **AWS (Amazon Web Services)** as the cloud provider. Terraform communicates with AWS APIs to create,
 modify, and destroy resources according to the configuration files.
+
 
 ## Services
 
@@ -39,6 +41,7 @@ AWS Lambda is a serverless compute service that runs code in response to events 
 - Reduces operational overhead and costs
 - Pulls container images from ECR for deployment
 
+
 ## Bootstrap | [README](./bootstrap/README.md)
 
 Before deploying the main infrastructure, you must set up the OIDC (OpenID Connect) trust relationship between GitHub
@@ -59,7 +62,9 @@ Actions and AWS. This allows GitHub Actions to authenticate with AWS without sto
    ```
 
 3. Apply the bootstrap configuration with your GitHub details. You can manually enter your GitHub username and repo name,
-   or you can run the following command to automatically extract them from your git remote. Manual setup:
+   or you can run the following command to automatically extract them from your git remote. 
+   <br></br>
+   Manual setup:
    ```bash
    terraform apply `
    -var="github_username=YOUR_USERNAME" `
@@ -68,9 +73,10 @@ Actions and AWS. This allows GitHub Actions to authenticate with AWS without sto
    
    Automatic setup:
    ```bash
-   terraform apply `
-   -var="github_username=$((git config --get remote.origin.url).Split('/')[-2])" `
-   -var="github_repo_name=$(((git config --get remote.origin.url).Split('/')[-1]).Replace('.git',''))"
+   $REPO_NAME = (basename -s .git (git config --get remote.origin.url)); `
+   $USER_NAME = (git config --get remote.origin.url).Split('/')[-2]; `
+   
+   terraform apply -var="github_username=$REPO_NAME" -var="github_repo_name=$USER_NAME"
    ```
 
 4. After successful deployment, note the IAM Role ARN from the output.
@@ -93,19 +99,53 @@ of any important data before proceeding.
 
 To remove all resources from AWS, run the following commands:
 
-1. Navigate to the main terraform directory and destroy the infrastructure:
+1. Setup Variables
    ```bash
-   cd terraform
-   terraform destroy -auto-approve
+   $URL = (git config --get remote.origin.url); `
+   $REPO_NAME = $URL.Split('/')[-1].Replace('.git',''); `
+   $USER_NAME = $URL.Split('/')[-2]; `
+   $BUCKET = "${REPO_NAME}-tfstate-${USER_NAME}"; 
    ```
-
-2. Then navigate to the bootstrap directory and destroy the bootstrap resources:
+    
+2. Cleanup Main App (S3 State)
    ```bash
-   cd terraform/bootstrap
-   terraform destroy -auto-approve -var="github_username=YOUR_GITHUB_USERNAME" -var="github_repo_name=YOUR_REPO_NAME"
+   terraform -chdir=terraform init -reconfigure -backend-config="bucket=$BUCKET"; `
+   terraform -chdir=terraform destroy -auto-approve -var="project_name=$REPO_NAME";
    ```
-
+   
+3. Cleanup Bootstrap (Local State)
+   ```bash
+   terraform -chdir=terraform/bootstrap init; `
+   terraform -chdir=terraform/bootstrap destroy -auto-approve `
+      -var="github_username=$USER_NAME" `
+      -var="github_repo_name=$REPO_NAME";
+   ```
+4. Delete all hidden terraform metadata in every folder
+   ```bash
+   Get-ChildItem -Path . -Include .terraform, .terraform.lock.hcl, terraform.tfstate, terraform.tfstate.backup -Recurse -Force | Remove-Item -Recurse -Force
+   ```
 This will permanently delete all AWS resources created by this project.
+
+## Check Existing Resources
+
+1. Identify current Repository Name
+   ```bash
+   $REPO_NAME = (git config --get remote.origin.url).Split('/')[-1].Replace('.git',''); `
+   Write-Host "Current Repository: $REPO_NAME" -ForegroundColor Green; 
+   ```
+   
+2. Check for IAM Roles (which often miss tags)
+   ```bash
+   aws iam list-roles --query "Roles[?contains(RoleName, '$REPO_NAME')].RoleName" --output table;
+   ```
+   
+3. List every ARN with that project tag
+   ```bash
+   aws resourcegroupstaggingapi get-resources `
+     --tag-filters Key=Project,Values=$REPO_NAME `
+     --query 'ResourceTagMappingList[].ResourceARN' `
+     --output table
+   ```
 
 ## Deployment Workflow
 
