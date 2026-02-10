@@ -17,6 +17,7 @@
         <sonar.projectKey>artillepsy_career-assistant</sonar.projectKey>
         <sonar.organization>artillepsy</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.skip>false</sonar.skip>
 
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
