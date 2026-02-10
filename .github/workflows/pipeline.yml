@@ -40,6 +40,8 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      TF_LOG: DEBUG
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -58,9 +60,9 @@ jobs:
           terraform_version: "1.10.0"
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -input=false
         working-directory: ./terraform
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -input=false -var="project_name=career-assistant"
         working-directory: ./terraform
