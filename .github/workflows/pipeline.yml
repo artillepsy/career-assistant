@@ -75,6 +75,8 @@ jobs:
       contents: read
     outputs:
       api_image_uri: ${{ steps.build-api-image.outputs.image }}
+    env:
+      APP_PATH: ./backend/career-assistant-api
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -98,7 +100,7 @@ jobs:
           API_IMAGE_TAG: ${{ github.sha }}
         run: |
           API_IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$API_IMAGE_TAG
-          docker build --platform linux/arm64 -t $API_IMAGE_URI .
+          docker build --platform linux/arm64 -t $API_IMAGE_URI $APP_PATH
           docker push $API_IMAGE_URI
           echo "image=$API_IMAGE_URI" >> $GITHUB_OUTPUT
 

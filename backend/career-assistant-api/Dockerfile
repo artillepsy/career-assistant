@@ -1,35 +1,27 @@
-# Stage 1: Build the application
+# Stage 1: Build
 FROM maven:3.9-eclipse-temurin-25 AS build
-
 WORKDIR /app
 
-# Copy pom files for dependency resolution
+# The context is now the subfolder, so pom.xml is in the current directory
 COPY pom.xml .
-COPY backend/career-assistant-api/pom.xml backend/career-assistant-api/
-
-# Download dependencies
 RUN mvn dependency:go-offline -B
 
-# Copy source code
-COPY backend/career-assistant-api/src backend/career-assistant-api/src
+# Copy src directly
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Build the application
-RUN mvn clean package -DskipTests -f backend/career-assistant-api/pom.xml
-
-# Stage 2: Create runtime image
+# Stage 2: Runtime
 FROM eclipse-temurin:25-jre-alpine
-
 WORKDIR /app
 
-# Create non-root user
 RUN addgroup -S spring && adduser -S spring -G spring
+
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 /lambda-adapter /opt/extensions/lambda-adapter
+
 USER spring:spring
 
-# Copy the built artifact from build stage
-COPY --from=build /app/backend/career-assistant-api/target/*.jar app.jar
+# The jar will be in /app/target/ because WORKDIR was /app
+COPY --from=build /app/target/*.jar app.jar
 
-# Expose application port
 EXPOSE 8080
-
-# Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
