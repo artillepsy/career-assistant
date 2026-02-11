@@ -12,7 +12,18 @@ resource "aws_lambda_function" "this" {
   environment {
     variables = {
       JAVA_TOOL_OPTIONS = "-XX:AOTCache=app.aot -XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+
+      # Spring Boot automatically maps these to your DataSource
+      SPRING_DATASOURCE_URL      = var.db_url
+      SPRING_DATASOURCE_USERNAME = var.db_username
+      SPRING_DATASOURCE_PASSWORD = var.db_password
+      SPRING_PROFILES_ACTIVE     = "prod"
     }
+  }
+
+  vpc_config {
+    subnet_ids         = var.vpc_subnet_ids
+    security_group_ids = var.vpc_security_group_ids
   }
 }
 
