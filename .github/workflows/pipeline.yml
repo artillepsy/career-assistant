@@ -32,6 +32,22 @@ jobs:
           mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.qualitygate.wait=true  
 
+  # Build Docker Images (Verify context and compilation)
+  build-docker-image:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    env:
+      APP_PATH: ./backend/career-assistant-api
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Local Docker Build Check
+        run: |
+          # This catches Dockerfile syntax errors or JAR packaging issues before AWS work
+          docker build --platform linux/arm64 -t local-check:latest $APP_PATH
+
+  # Create ECR
   deploy-ecr:
     runs-on: ubuntu-latest
     environment: production
@@ -64,10 +80,11 @@ jobs:
 
       - name: Create ECR Only
         # "targets" the ECR module so it creates the repo before trying to push
-        run: terraform apply -target=module.ecr -auto-approve
+        run: terraform apply -target=module.ecr -auto-approve -input=false -var="api_image_uri=placeholder"
         working-directory: ./terraform
 
-  build-and-push-docker:
+  # Push Docker Images to the ECR
+  push-images-to-ecr:
     runs-on: ubuntu-latest
     needs: deploy-ecr # Waits for ECR to exist
     permissions:
@@ -109,7 +126,7 @@ jobs:
   deploy-infrastructure:
     runs-on: ubuntu-latest
     environment: production
-    needs: build-and-push-docker # Waits for the image to be in ECR
+    needs: push-images-to-ecr # Waits for the image to be in ECR
     permissions:
       id-token: write
       contents: read
@@ -142,5 +159,5 @@ jobs:
       - name: Terraform Apply (Everything else)
         run: |
           # Now the pushed specific image URI is passed to the Terraform apply
-          terraform apply -auto-approve -var="api_image_uri=${{ needs.build-and-push-docker.outputs.api_image_uri }}"
+          terraform apply -auto-approve -var="api_image_uri=${{ needs.build-and-push-docker.outputs.api_image_uri }}" -input=false
         working-directory: ./terraform

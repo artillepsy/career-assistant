@@ -1,5 +1,18 @@
 # Terraform Infrastructure Configuration
 
+## Table of Contents
+
+- [Purpose](#purpose)
+- [Provider](#provider)
+- [Services](#services)
+   - [AWS ECR Module (Elastic Container Registry)](#1-aws-ecr-module-elastic-container-registry--readme)
+   - [AWS Lambda for API](#2-aws-lambda-for-api--readme)
+- [Bootstrap](#bootstrap--readme)
+- [Cleaning Up](#cleaning-up)
+- [Check Existing Resources](#check-existing-resources)
+- [Deployment Workflow](#deployment-workflow)
+- [TODO](#todo)
+
 ## Purpose
 
 This Terraform configuration manages cloud infrastructure as code (IaC), enabling automated provisioning, deployment,
