@@ -51,7 +51,7 @@ jobs:
   deploy-ecr:
     runs-on: ubuntu-latest
     environment: production
-    needs: build-and-test
+    needs: build-docker-image
     permissions:
       id-token: write
       contents: read
