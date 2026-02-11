@@ -167,7 +167,5 @@ This will permanently delete all AWS resources created by this project.
 - Add API Gateway for Lambda functions. Now it's only accessible via simple Lambda URL
 - Add CloudWatch Logs for Lambda functions
 - Add RDS for database
-- Push actual Docker Images built by GitHub Actions to ECR
 - Add SnapStart for Lambda functions in the future (it doesn't support docker images yet) to reduce cold start time.
   (Alternative) Increase Lambda memory size instead.
-- Add S3 bucket for state
