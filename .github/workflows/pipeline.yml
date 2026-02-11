@@ -40,7 +40,7 @@ jobs:
   deploy-ecr:
     runs-on: ubuntu-latest
     environment: production
-    needs: build-docker-image
+    needs: build-and-test
     permissions:
       id-token: write
       contents: read
@@ -83,7 +83,7 @@ jobs:
         run: terraform apply -target=module.ecr -auto-approve -input=false -var="api_image_uri=placeholder"
         working-directory: ./terraform
 
-  # Push Docker Images to the ECR
+  # Build And Push Docker Images to the ECR
   push-images-to-ecr:
     runs-on: ubuntu-latest
     needs: deploy-ecr # Waits for ECR to exist
@@ -161,13 +161,7 @@ jobs:
         run: |
           BUCKET_NAME="${{ github.event.repository.name }}-tfstate-${{ github.repository_owner }}"
           terraform init -input=false -backend-config="bucket=${BUCKET_NAME}"
-        working-directory: ./terraform
 
-      - name: Terraform Apply (Everything else)
-        run: |
-          # Now the pushed specific image URI is passed to the Terraform apply
-          terraform apply -auto-approve -var="api_image_uri=${{ needs.push-images-to-ecr.outputs.api_image_uri }}" -input=false
-          
           # 1. Capture the Lock ID if it exists
           LOCK_ID=$(terraform show -json 2>/dev/null | jq -r '.lock.ID // empty')
           
@@ -178,4 +172,10 @@ jobs:
           else
             echo "No active locks found. Proceeding..."
           fi
+        working-directory: ./terraform
+
+      - name: Terraform Apply (Everything else)
+        run: |
+          # Now the pushed specific image URI is passed to the Terraform apply
+          terraform apply -auto-approve -var="api_image_uri=${{ needs.push-images-to-ecr.outputs.api_image_uri }}" -input=false
         working-directory: ./terraform
