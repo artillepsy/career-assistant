@@ -83,6 +83,8 @@ jobs:
       api_image_uri: ${{ steps.build-api-image.outputs.image }}
     env:
       APP_PATH: ./backend/career-assistant-api
+      TF_LOG: DEBUG
+      TF_VAR_project_name: ${{ github.event.repository.name }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
