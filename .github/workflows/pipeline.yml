@@ -63,19 +63,21 @@ jobs:
 
       - name: Terraform Init
         run: |
-          BUCKET_NAME="${{ github.event.repository.name }}-tfstate-${{ github.repository_owner }}"
-          terraform init -backend-config="bucket=${BUCKET_NAME}"
+          # 1. Run a check and capture both stdout and stderr, but force a "true" exit code
+          INIT_OUTPUT=$(terraform providers 2>&1 || true)
           
-          # 1. Capture the Lock ID if it exists
-          LOCK_ID=$(terraform show -json 2>/dev/null | jq -r '.lock.ID // empty')
+          # 2. Extract the Lock ID from the captured output
+          LOCK_ID=$(echo "$INIT_OUTPUT" | grep -oE '[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}' | head -n 1 || echo "")
           
-          # 2. Only run force-unlock if a LOCK_ID was found
           if [ ! -z "$LOCK_ID" ]; then
-            echo "Found zombie lock: $LOCK_ID. Forcing unlock..."
+            echo "Detected zombie lock: $LOCK_ID. Releasing..."
             terraform force-unlock -force "$LOCK_ID"
           else
-            echo "No active locks found. Proceeding..."
+            echo "No active locks detected or state is clear."
           fi
+          
+          BUCKET_NAME="${{ github.event.repository.name }}-tfstate-${{ github.repository_owner }}"
+          terraform init -backend-config="bucket=${BUCKET_NAME}"
         working-directory: ./terraform
 
       - name: Create ECR Only
@@ -159,19 +161,21 @@ jobs:
 
       - name: Terraform Init
         run: |
-          BUCKET_NAME="${{ github.event.repository.name }}-tfstate-${{ github.repository_owner }}"
-          terraform init -input=false -backend-config="bucket=${BUCKET_NAME}"
-
-          # 1. Capture the Lock ID if it exists
-          LOCK_ID=$(terraform show -json 2>/dev/null | jq -r '.lock.ID // empty')
+          # 1. Run a check and capture both stdout and stderr, but force a "true" exit code
+          INIT_OUTPUT=$(terraform providers 2>&1 || true)
           
-          # 2. Only run force-unlock if a LOCK_ID was found
+          # 2. Extract the Lock ID from the captured output
+          LOCK_ID=$(echo "$INIT_OUTPUT" | grep -oE '[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}' | head -n 1 || echo "")
+          
           if [ ! -z "$LOCK_ID" ]; then
-            echo "Found zombie lock: $LOCK_ID. Forcing unlock..."
+            echo "Detected zombie lock: $LOCK_ID. Releasing..."
             terraform force-unlock -force "$LOCK_ID"
           else
-            echo "No active locks found. Proceeding..."
+            echo "No active locks detected or state is clear."
           fi
+          
+          BUCKET_NAME="${{ github.event.repository.name }}-tfstate-${{ github.repository_owner }}"
+          terraform init -input=false -backend-config="bucket=${BUCKET_NAME}"
         working-directory: ./terraform
 
       - name: Terraform Apply (Everything else)
