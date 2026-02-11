@@ -6,3 +6,8 @@ variable "aws_region" {
 variable "project_name" {
   type = string
 }
+
+variable "api_image_uri" {
+  description = "The ECR image URI for the Lambda function (API)"
+  type        = string
+}

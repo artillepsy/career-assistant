@@ -2,7 +2,7 @@ resource "aws_lambda_function" "this" {
   function_name = var.function_name
   role = aws_iam_role.lambda_exec.arn
   package_type = "Image"
-  image_uri = var.image_uri
+  image_uri = var.api_image_uri
 
   architectures = ["arm64"] # Java 25 on Graviton is 34% better price-performance
   memory_size = var.memory_size

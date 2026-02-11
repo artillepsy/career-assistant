@@ -32,11 +32,81 @@ jobs:
           mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.qualitygate.wait=true  
 
+  deploy-ecr:
+    runs-on: ubuntu-latest
+    environment: production
+    needs: build-and-test
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        # pinned to v4 stable
+        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-central-1
+
+      - name: Setup Terraform
+        # pinned to v3.1.2
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd
+        with:
+          terraform_version: "1.10.0"
+
+      - name: Terraform Init
+        run: |
+          BUCKET_NAME="${{ github.event.repository.name }}-tfstate-${{ github.repository_owner }}"
+          terraform init -backend-config="bucket=${BUCKET_NAME}"
+        working-directory: ./terraform
+
+      - name: Create ECR Only
+        # "targets" the ECR module so it creates the repo before trying to push
+        run: terraform apply -target=module.ecr -auto-approve
+        working-directory: ./terraform
+
+  build-and-push-docker:
+    runs-on: ubuntu-latest
+    needs: deploy-ecr # Waits for ECR to exist
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      api_image_uri: ${{ steps.build-api-image.outputs.image }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        # pinned to v4 stable
+        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-central-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push
+        id: build-api-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ github.event.repository.name }}-repo
+          API_IMAGE_TAG: ${{ github.sha }}
+        run: |
+          API_IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$API_IMAGE_TAG
+          docker build --platform linux/arm64 -t $API_IMAGE_URI .
+          docker push $API_IMAGE_URI
+          echo "image=$API_IMAGE_URI" >> $GITHUB_OUTPUT
+
   # Infrastructure Deployment
   deploy-infrastructure:
     runs-on: ubuntu-latest
     environment: production
-    needs: build-and-test
+    needs: build-and-push-docker # Waits for the image to be in ECR
     permissions:
       id-token: write
       contents: read
@@ -66,6 +136,8 @@ jobs:
           terraform init -input=false -backend-config="bucket=${BUCKET_NAME}"
         working-directory: ./terraform
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
+      - name: Terraform Apply (Everything else)
+        run: |
+          # Now the pushed specific image URI is passed to the Terraform apply
+          terraform apply -auto-approve -var="api_image_uri=${{ needs.build-and-push-docker.outputs.api_image_uri }}"
         working-directory: ./terraform

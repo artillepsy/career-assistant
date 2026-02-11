@@ -25,5 +25,5 @@ module "api_lambda" {
   function_name = "${var.project_name}-api"
 
   # Passing the OUTPUT of the ECR module as the INPUT to the Lambda module
-  image_uri = "${module.ecr.repository_url}:latest"
+  api_image_uri = var.api_image_uri
 }

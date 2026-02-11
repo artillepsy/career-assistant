@@ -2,7 +2,7 @@ variable "function_name" {
   type = string
 }
 
-variable "image_uri" {
+variable "api_image_uri" {
   description = "The ECR image URI (passed from the ECR module)"
   type        = string
 }
