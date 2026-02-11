@@ -47,6 +47,7 @@ jobs:
     env:
       TF_LOG: DEBUG
       TF_VAR_project_name: ${{ github.event.repository.name }}
+      TF_VAR_db_password: ${{ secrets.AWS_DB_PASSWORD }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -137,6 +138,7 @@ jobs:
     env:
       TF_LOG: DEBUG
       TF_VAR_project_name: ${{ github.event.repository.name }}
+      TF_VAR_db_password: ${{ secrets.AWS_DB_PASSWORD }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
