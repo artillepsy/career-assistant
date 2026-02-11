@@ -7,6 +7,13 @@ resource "aws_lambda_function" "this" {
   architectures = ["arm64"] # Java 25 on Graviton is 34% better price-performance
   memory_size = var.memory_size
   timeout = 30
+
+  # Environment block to enable AOT loading and Tiered Compilation
+  environment {
+    variables = {
+      JAVA_TOOL_OPTIONS = "-XX:AOTCache=app.aot -XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+    }
+  }
 }
 
 # An Alias acts as a "pointer" to the SnapStart-enabled version
