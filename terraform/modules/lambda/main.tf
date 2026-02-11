@@ -25,7 +25,6 @@ resource "aws_lambda_function_url" "api_url" {
 
   # todo: configure origins later, when the extension is ready to test
   cors {
-    allow_credentials = true
     allow_origins     = ["*"]
     allow_methods     = ["GET", "POST"]
     allow_headers     = ["*"]
@@ -34,12 +33,21 @@ resource "aws_lambda_function_url" "api_url" {
   }
 }
 
-# Add a permission allowing public URL (For test only)
-resource "aws_lambda_permission" "allow_public_url" {
-  statement_id  = "AllowPublicURL"
-  action        = "lambda:InvokeFunctionUrl"
+# Permission 1: Allow the URL specifically
+resource "aws_lambda_permission" "url_permission" {
+  statement_id           = "AllowFunctionURL"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = aws_lambda_function.this.function_name
+  principal              = "*"
+  function_url_auth_type = "NONE"
+  qualifier              = aws_lambda_alias.live.name
+}
+
+# Permission 2: Allow general invocation for the public principal
+resource "aws_lambda_permission" "public_invoke" {
+  statement_id  = "AllowPublicInvoke"
+  action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.this.function_name
   principal     = "*"
-  function_url_auth_type = "NONE"
-  qualifier     = aws_lambda_alias.live.name # Crucial because the URL uses the alias
+  qualifier     = aws_lambda_alias.live.name
 }
