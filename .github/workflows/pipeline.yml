@@ -42,10 +42,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # 1. Set up QEMU for multi-platform support
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # 2. Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Local Docker Build Check
         run: |
           # This catches Dockerfile syntax errors or JAR packaging issues before AWS work
-          docker build --platform linux/arm64 -t local-check:latest $APP_PATH
+          docker buildx build --platform linux/arm64 -t local-check:latest $APP_PATH --load
 
   # Create ECR
   deploy-ecr:
@@ -118,8 +126,7 @@ jobs:
           API_IMAGE_TAG: ${{ github.sha }}
         run: |
           API_IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$API_IMAGE_TAG
-          docker build --platform linux/arm64 -t $API_IMAGE_URI $APP_PATH
-          docker push $API_IMAGE_URI
+          docker buildx build --platform linux/arm64 -t $API_IMAGE_URI ./backend/career-assistant-api --push
           echo "image=$API_IMAGE_URI" >> $GITHUB_OUTPUT
 
   # Infrastructure Deployment
@@ -159,5 +166,5 @@ jobs:
       - name: Terraform Apply (Everything else)
         run: |
           # Now the pushed specific image URI is passed to the Terraform apply
-          terraform apply -auto-approve -var="api_image_uri=${{ needs.build-and-push-docker.outputs.api_image_uri }}" -input=false
+          terraform apply -auto-approve -var="api_image_uri=${{ needs.push-images-to-ecr.outputs.api_image_uri }}" -input=false
         working-directory: ./terraform
