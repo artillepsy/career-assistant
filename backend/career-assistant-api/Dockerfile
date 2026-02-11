@@ -4,7 +4,7 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests spring-boot:process-aot
 
 # Stage 2: Runtime
 FROM eclipse-temurin:25-jre-alpine
@@ -31,5 +31,4 @@ EXPOSE 8080
 
 # 6. Final Entrypoint
 # Include the AOT loading and Tiered compilation flags here
-# "-Dspring.aot.enabled=true" - removed
-ENTRYPOINT ["java", "-XX:AOTCache=app.aot", "-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:AOTCache=app.aot", "-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-Dspring.aot.enabled=true", "-jar", "app.jar"]
