@@ -4,6 +4,10 @@ on:
   push:
     branches: ["master"]
 
+concurrency:
+  group: production_deploy
+  cancel-in-progress: false
+
 jobs:
   # Local Build and Test
   build-and-test:
@@ -31,31 +35,6 @@ jobs:
         run: | 
           mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.qualitygate.wait=true  
-
-  # Build Docker Images (Verify context and compilation)
-  build-docker-image:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    env:
-      APP_PATH: ./backend/career-assistant-api
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      # 1. Set up QEMU for multi-platform support
-      - name: Set up QEMU
-        # pinned to v3.7.0
-        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
-
-      # 2. Set up Docker Buildx
-      - name: Set up Docker Buildx
-        # pinned to v3 stable
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
-
-      - name: Local Docker Build Check
-        run: |
-          # This catches Dockerfile syntax errors or JAR packaging issues before AWS work
-          docker buildx build --platform linux/arm64 -t local-check:latest $APP_PATH --load
 
   # Create ECR
   deploy-ecr:
@@ -86,6 +65,17 @@ jobs:
         run: |
           BUCKET_NAME="${{ github.event.repository.name }}-tfstate-${{ github.repository_owner }}"
           terraform init -backend-config="bucket=${BUCKET_NAME}"
+          
+          # 1. Capture the Lock ID if it exists
+          LOCK_ID=$(terraform show -json 2>/dev/null | jq -r '.lock.ID // empty')
+          
+          # 2. Only run force-unlock if a LOCK_ID was found
+          if [ ! -z "$LOCK_ID" ]; then
+            echo "Found zombie lock: $LOCK_ID. Forcing unlock..."
+            terraform force-unlock -force "$LOCK_ID"
+          else
+            echo "No active locks found. Proceeding..."
+          fi
         working-directory: ./terraform
 
       - name: Create ECR Only
@@ -119,6 +109,14 @@ jobs:
         id: login-ecr
         # pinned to v2 stable
         uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076
+
+      - name: Set up QEMU
+        # pinned to v3.7.0
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
+
+      - name: Set up Docker Buildx
+        # pinned to v3 stable
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
 
       - name: Build and Push
         id: build-api-image
@@ -169,4 +167,15 @@ jobs:
         run: |
           # Now the pushed specific image URI is passed to the Terraform apply
           terraform apply -auto-approve -var="api_image_uri=${{ needs.push-images-to-ecr.outputs.api_image_uri }}" -input=false
+          
+          # 1. Capture the Lock ID if it exists
+          LOCK_ID=$(terraform show -json 2>/dev/null | jq -r '.lock.ID // empty')
+          
+          # 2. Only run force-unlock if a LOCK_ID was found
+          if [ ! -z "$LOCK_ID" ]; then
+            echo "Found zombie lock: $LOCK_ID. Forcing unlock..."
+            terraform force-unlock -force "$LOCK_ID"
+          else
+            echo "No active locks found. Proceeding..."
+          fi
         working-directory: ./terraform
