@@ -33,3 +33,13 @@ resource "aws_lambda_function_url" "api_url" {
     max_age           = 86400
   }
 }
+
+# Add a permission allowing public URL (For test only)
+resource "aws_lambda_permission" "allow_public_url" {
+  statement_id  = "AllowPublicURL"
+  action        = "lambda:InvokeFunctionUrl"
+  function_name = aws_lambda_function.this.function_name
+  principal     = "*"
+  function_url_auth_type = "NONE"
+  qualifier     = aws_lambda_alias.live.name # Crucial because the URL uses the alias
+}
