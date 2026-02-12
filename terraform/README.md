@@ -7,6 +7,7 @@
 - [Services](#services)
    - [AWS ECR Module (Elastic Container Registry)](#1-aws-ecr-module-elastic-container-registry--readme)
    - [AWS Lambda for API](#2-aws-lambda-for-api--readme)
+   - [AWS RDS Module (Relational Database Service)](#3-aws-rds-module-relational-database-service--readme)
 - [Bootstrap](#bootstrap--readme)
 - [Cleaning Up](#cleaning-up)
 - [Check Existing Resources](#check-existing-resources)
@@ -54,6 +55,16 @@ AWS Lambda is a serverless compute service that runs code in response to events 
 - Reduces operational overhead and costs
 - Pulls container images from ECR for deployment
 
+### 3. AWS RDS Module (Relational Database Service) | [README](./modules/rds/README.md)
+
+Amazon RDS is a managed relational database service that simplifies database setup, operation, and scaling in the cloud.
+
+**Purpose in this project:**
+
+- Provides a PostgreSQL database for persistent data storage
+- Manages automated backups, patches, and maintenance
+- Integrates with Lambda functions through VPC networking
+- Ensures data durability and high availability
 
 ## Bootstrap | [README](./bootstrap/README.md)
 
