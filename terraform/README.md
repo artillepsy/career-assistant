@@ -42,7 +42,7 @@ images.
 
 - Stores Docker images for Lambda functions
 - Provides secure, scalable container image storage
-- Integrates seamlessly with AWS Lambda for container-based deployments
+- Integrates seamlessly with AWS Lambda for container-based deployments 
 
 ### 2. AWS Lambda for API | [README](./modules/lambda/README.md)
 
