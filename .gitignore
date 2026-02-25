@@ -1,5 +1,4 @@
 # --- Java & Maven Wrapper ---
-# We ignore the target folder but keep the Maven wrapper so others can build the project
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !maven-wrapper.jar
@@ -13,25 +12,48 @@ target/
 .temp/
 /help.md
 
-# --- Angular / Frontend ---
-# Essential to ignore dependencies and local caches
+# --- Frontend (Angular & Node) ---
 node_modules/
+**/node_modules/
 .npm/
 .angular/
+**/.angular/cache
 dist/
+**/dist
+**/tmp
+**/out-tsc
+**/bazel-out
 /frontend/proxy.conf.json
 npm-debug.log*
 yarn-debug.log*
+yarn-error.log
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+__screenshots__/
+
+# --- Terraform ---
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+.terraformrc
+terraform.rc
 
 # --- IntelliJ IDEA ---
-# Ignore the whole folder except for shared run configurations if needed
 .idea/
 *.iml
 *.iws
 *.ipr
 out/
 
-# --- Eclipse ---
+# --- Eclipse & STS ---
 .apt_generated
 .classpath
 .factorypath
@@ -39,9 +61,20 @@ out/
 .settings/
 .springBeans
 .sts4-cache
+*.launch
 
 # --- VS Code ---
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.history/
+
+# --- Other Editors ---
+.c9/
+*.sublime-workspace
 
 # --- Operating System ---
 .DS_Store
@@ -52,22 +85,3 @@ Thumbs.db
 !**/src/test/**/target/
 !**/src/main/**/build/
 !**/src/test/**/build/
-
-# Local .terraform directories (provider binaries)
-**/.terraform/*
-
-# .tfstate files (infrastructure state)
-*.tfstate
-*.tfstate.*
-
-# Variable files (sensitive inputs)
-*.tfvars
-*.tfvars.json
-
-# Crash log files
-crash.log
-crash.*.log
-
-# Terraform CLI configuration files
-.terraformrc
-terraform.rc
